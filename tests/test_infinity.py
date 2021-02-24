@@ -5,6 +5,7 @@ from node_finder import most_detrimental
 
 
 # Ensure that we correctly handle cases where the damage is infinite
+# In this graph, node 1 sits between every path from source to sink
 
 # GRAPH:
 # 0->1 u
@@ -18,7 +19,7 @@ from node_finder import most_detrimental
 # SOURCE: 0
 # SINK:   5
 
-def test_example():
+def test_infinity():
     # create a graph consisting of three nodes connected in sequence
     graph = Graph([(0,1), (1,3), (3,2), (1,2), (1,4), (2,5), (4,5)])
     graph.es['type'] = ['up', 'up', 'down', 'down', 'down', 'up', 'down']
