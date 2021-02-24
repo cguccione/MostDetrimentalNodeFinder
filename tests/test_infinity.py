@@ -21,7 +21,7 @@ from node_finder import most_detrimental
 
 def test_infinity():
     # create a graph consisting of three nodes connected in sequence
-    graph = Graph([(0,1), (1,3), (3,2), (1,2), (1,4), (2,5), (4,5)])
+    graph = Graph([(0,1), (1,3), (3,2), (1,2), (1,4), (2,5), (4,5)], directed=True)
     graph.es['type'] = ['up', 'up', 'down', 'down', 'down', 'up', 'down']
     # the most detrimental node should be B
     node = most_detrimental(graph, 0, 5)
