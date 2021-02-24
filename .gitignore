@@ -135,3 +135,6 @@ data/
 .Rhistory
 *.Rproj
 .Rproj.user
+
+# mac icon 
+.DS_Store
