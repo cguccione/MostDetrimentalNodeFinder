@@ -16,6 +16,8 @@ from node_finder import most_detrimental
 # SINK:   C
 
 def test_example():
+	# create a graph consisting of three nodes connected in sequence
 	graph = Graph.Formula('A->B->C')
+	# the most detrimental node should be B
 	node = most_detrimental(graph, 'A', 'C')
 	assert node == 'B'

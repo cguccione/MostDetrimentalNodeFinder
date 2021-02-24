@@ -17,7 +17,7 @@ from igraph import Graph
 # create a graph consisting of three nodes connected in sequence
 graph = Graph.Formula('A->B->C')
 
-node_finder.most_detrimental(graph, 'A', 'C')
+node_finder.most_detrimental(graph, source='A', sink='C')
 ```
 
 ## Executing tests
