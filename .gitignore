@@ -130,3 +130,8 @@ dmypy.json
 
 # data directory
 data/
+
+# Mike's R things
+.Rhistory
+*.Rproj
+.Rproj.user
