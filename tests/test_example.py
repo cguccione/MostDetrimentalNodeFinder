@@ -9,15 +9,17 @@ from node_finder import most_detrimental
 # be the one in the middle
 
 # GRAPH:
-# A->B
-# B->C
+# A->B u
+# B->C u
 
 # SOURCE: A
 # SINK:   C
 
 def test_example():
-	# create a graph consisting of three nodes connected in sequence
-	graph = Graph.Formula('A->B->C')
-	# the most detrimental node should be B
-	node = most_detrimental(graph, 'A', 'C')
-	assert node == 'B'
+    # create a graph consisting of three nodes connected in sequence
+    # every edge will be upregulating
+    graph = Graph.Formula('A->B->C')
+    graph.es['type'] = ['up']*2
+    # the most detrimental node should be B
+    node = most_detrimental(graph, 'A', 'C')
+    assert node == 'B'

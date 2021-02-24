@@ -16,7 +16,10 @@ from igraph import Graph
 
 # create a graph consisting of three nodes connected in sequence
 graph = Graph.Formula('A->B->C')
+# each edge must have a type: up (for upgregulating) or down( for downregulating)
+graph.es['type'] = ['up']*2
 
+# should return 'B'
 node_finder.most_detrimental(graph, source='A', sink='C')
 ```
 
