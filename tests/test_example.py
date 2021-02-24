@@ -23,3 +23,25 @@ def test_example():
     # the most detrimental node should be B
     node = most_detrimental(graph, 'A', 'C')
     assert node == 'B'
+
+
+# The contents of the 'type' attribute should probably be irrelevant. Our
+# implementation should just check whether they are equal, not that they equal a
+# specific, expected value. In other words, it should be agnostic of this input
+
+# GRAPH:
+# A->B u
+# B->C u
+
+# SOURCE: A
+# SINK:   C
+
+def test_example_other_types():
+    for edge_types in (('up', 'down'), (0, 1), ('activates', 'inactivates'), (100, -200)):
+        # create a graph consisting of three nodes connected in sequence
+        # every edge will be upregulating
+        graph = Graph.Formula('A->B->C')
+        graph.es['type'] = edge_types
+        # the most detrimental node should be B
+        node = most_detrimental(graph, 'A', 'C')
+        assert node == 'B', 'Failed with edge types {} and {}'.format(*edge_types)

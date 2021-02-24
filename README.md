@@ -5,7 +5,7 @@ Find a node that, when removed, will cause the most damage to a shortest path be
 For development:
 ```
 git clone https://github.com/cguccione/MostDetrimentalNodeFinder
-pip install -e MostDetrimentalNodeFinder
+pip install -e MostDetrimentalNodeFinder[test]
 ```
 
 ## Usage
@@ -16,7 +16,8 @@ from igraph import Graph
 
 # create a graph consisting of three nodes connected in sequence
 graph = Graph.Formula('A->B->C')
-# each edge must have a type: up (for upgregulating) or down( for downregulating)
+# each edge must have a type: 'up' (for upgregulating) or 'down' (for downregulating)
+# each edge represents an upregulating relationship, in this case
 graph.es['type'] = ['up']*2
 
 # should return 'B'
