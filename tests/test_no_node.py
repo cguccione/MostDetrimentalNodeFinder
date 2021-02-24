@@ -25,6 +25,30 @@ def test_directions():
     assert node is None
 
 
+# Same graph. But this time, there's an extra edge from node 0 to node 2. There are
+# two possible paths to the sink, so this will test if the correct path was chosen.
+# The path that directly connects node 0 with node 1 should be chosen over the path
+# that first passes through the intermediate node 2
+
+# GRAPH:
+# 0->1 u
+# 2->1 u
+# 0->2 u
+
+# SOURCE: 0
+# SINK:   1
+
+def test_two_paths_no_node():
+    # create a graph consisting of three nodes
+    # where the other two nodes are pointing towards the middle one:
+    # 0->1<-2
+    graph = Graph([(0,1), (2,1), (0,2)], directed=True)
+    graph.es['type'] = ['up']*3
+
+    node = most_detrimental(graph, 0, 1)
+    assert node is None
+
+
 # GRAPH:
 # 0->1 u
 # 2->3 u

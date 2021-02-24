@@ -20,9 +20,9 @@ from node_finder import most_detrimental
 # SINK:   5
 
 def test_infinity():
-    # create a graph consisting of three nodes connected in sequence
+    # create a more complicated graph
     graph = Graph([(0,1), (1,3), (3,2), (1,2), (1,4), (2,5), (4,5)], directed=True)
     graph.es['type'] = ['up', 'up', 'down', 'down', 'down', 'up', 'down']
-    # the most detrimental node should be B
+
     node = most_detrimental(graph, 0, 5)
     assert node == 1
