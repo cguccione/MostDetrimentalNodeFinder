@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+import sys
+import click
 import igraph
 from sortedcontainers import SortedDict
+
 
 def damage(graph, source, sink, alpha=1):
     """
@@ -52,3 +55,36 @@ def most_detrimental(graph, source, sink, alpha=1):
     #{sink:{"node1": "damage of removing node1 in path from source to sink", "node2: "....""}}
 
     return damages.peekitem(index = -1)[0] #Finding the maximum node from the priority queue  Damages
+
+
+@click.group()
+@click.version_option()
+def main():
+    """
+    Most Detrimental Node Finder\n
+    Find the most detrimental node in a graph
+    """
+    pass
+
+
+@main.command('sif')
+@click.argument("fname")
+@click.argument("source")
+@click.argument("sink")
+@click.argument("alpha", type=click.FLOAT, default=1)
+def read_sif(fname, source, sink, alpha=1):
+    """ Run the most detrimental node finder on an SIF file, fname """
+    # first import pandas and load the sif adjacency list into a dataframe
+    import pandas as pd
+    df = pd.read_csv(fname, sep = "\t", names = ["to","edge","from"])
+    # convert to a graph
+    graph = igraph.Graph.DataFrame(df[["to","from"]], directed = True)
+    graph.es['type'] = df["edge"]
+    # run the most detrimenal node finder
+    node = most_detrimental(graph, source, sink, alpha)
+    # output the most detrimental node
+    click.echo('{}'.format(node))
+
+
+if __name__ == "__main__":
+    print(main(sys.argv[1]))
