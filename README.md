@@ -5,7 +5,8 @@ Find a node that, when removed, will cause the most damage to a shortest path be
 For development:
 ```
 git clone https://github.com/cguccione/MostDetrimentalNodeFinder
-pip install -e MostDetrimentalNodeFinder[test]
+cd MostDetrimentalNodeFinder
+pip install -e '.[test]'
 ```
 
 ## Usage
