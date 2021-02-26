@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import pytest
 from igraph import Graph
-from node_finder import most_detrimental
+from node_finder import most_detrimental, damage
 
 
 # Ensure that we correctly handle cases where the damage is infinite
