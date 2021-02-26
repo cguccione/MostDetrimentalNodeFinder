@@ -10,6 +10,7 @@ pip install -e '.[test]'
 ```
 
 ## Usage
+### Via the python API
 Our code utilizes the `python-igraph` library for graph representation. You must first create a graph with that library before executing our code.
 ```
 import node_finder
@@ -23,6 +24,23 @@ graph.es['type'] = ['up']*2
 
 # should return 'B'
 node_finder.most_detrimental(graph, source='A', sink='C')
+```
+### Directly from the terminal
+We also offer a command line utility, `nodefinder`, for ease of use.
+```
+$ nodefinder --help
+Usage: nodefinder [OPTIONS] COMMAND [ARGS]...
+
+  Most Detrimental Node Finder
+
+  Find the most detrimental node in a graph
+
+Options:
+  --version  Show the version and exit.
+  --help     Show this message and exit.
+
+Commands:
+  sif  Run the most detrimental node finder on an SIF file, fname
 ```
 
 ## Executing tests
