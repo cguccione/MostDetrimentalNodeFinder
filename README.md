@@ -40,7 +40,7 @@ Options:
   --help     Show this message and exit.
 
 Commands:
-  sif  Run the most detrimental node finder on an SIF file, fname
+  sif  Run the most detrimental node finder on an SIF file
 ```
 
 ## Executing tests

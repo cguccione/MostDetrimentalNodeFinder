@@ -73,7 +73,7 @@ def main():
 @click.argument("sink")
 @click.argument("alpha", type=click.FLOAT, default=1)
 def read_sif(fname, source, sink, alpha=1):
-    """ Run the most detrimental node finder on an SIF file, fname """
+    """ Run the most detrimental node finder on an SIF file """
     # first import pandas and load the sif adjacency list into a dataframe
     import pandas as pd
     df = pd.read_csv(fname, sep = "\t", names = ["to","edge","from"])
