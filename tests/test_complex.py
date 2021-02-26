@@ -4,18 +4,6 @@ from igraph import Graph
 from node_finder import most_detrimental, damage
 
 
-
-def influence(path, alpha=1):
-    """
-        given a sequence of edge types (ie up, down), return the influence of the path
-        consisting of those edges
-        The influence is defined as |E| + alpha * (# of alternating colored edges)
-    """
-    return len(path) + alpha * sum(
-        pair[0] != pair[1] for pair in zip(path[:-1], path[1:])
-    )
-
-
 # Ensure that we correctly handle cases where the damage is infinite
 # In this graph, node 1 sits between every path from source to sink
 
