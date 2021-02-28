@@ -12,32 +12,35 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(glue)
 library(latex2exp)
+library(patchwork)
 ggplot2::theme_set(theme_bw())
 ```
 
 ```{r}
 # simulate paths
-data = map_df(1:20, function(p){
+data = map_df(1:50, function(p){
   len = rep(p, p+1)
   consec = 0:p
   return(data.frame("length" = len, "consec" = consec))
 })
 
-alpha = c(0.1,1,100)
-
-for (a in alpha){
-  data = data %>%
-    mutate(scores = length + a*((length)-consec))
-  
-  ggplot(data, aes(x = consec, y = length, z = scores, fill = scores)) + 
+alpha = list(0,0.1,0.5,1,5,10)
+p.list = list()
+p.list = map(alpha, function(a){
+  data %>% 
+    mutate(scores = length + a*((length-1)-consec), alpha = a) %>% 
+    ggplot(aes(x = consec, y = length, z = scores, fill = scores)) + 
     geom_tile() +
     geom_contour(color = "white", alpha = 0.5) +
     coord_equal() +
     scale_fill_viridis_c() +
-    labs(title = TeX("$Influence_G(v_1,v_2) = |E_q| + \\alpha \\cdot ((|E_q|-1) -Consecutive(q))$"), x = TeX('$Consecutive(q)$'), y = TeX('$|E_q|$'), fill = TeX('$Influence_G(v_1,v_2)$')) +
-    theme(legend.position = "right")
-    
-  ggsave(glue("path_score_alpha{a}.png"), width = 5, height = 5)
-}
+    guides(fill = FALSE) +
+    labs(title = glue("alpha = {a}"), x = TeX('$unicolored(P)$'), y = TeX('$Edges(P)$'), fill = TeX('$Influence(P)$')) 
+    # theme(legend.position = "left")
+})
+
+p = patchwork::wrap_plots(p.list, ncol = 3) + plot_annotation(title = TeX("$Influence(P)= Edges(P) + \\alpha \\cdot (Nodes(P) - unicolored(P))$"), subtitle = TeX("Colored by $Influence(P)$"))
+ggsave(filename = "path_sim_alpha.png", width = 7, height = 5)
+
 ```
 
