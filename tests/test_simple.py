@@ -1,7 +1,19 @@
 #!/usr/bin/env python
 import pytest
 from igraph import Graph
-from node_finder import most_detrimental
+from node_finder import most_detrimental, damage
+
+
+
+def influence(path, alpha=1):
+    """
+        given a sequence of edge types (ie up, down), return the influence of the path
+        consisting of those edges
+        The influence is defined as |E| + alpha * (# of alternating colored edges)
+    """
+    return len(path) + alpha * sum(
+        pair[0] != pair[1] for pair in zip(path[:-1], path[1:])
+    )
 
 
 # A graph with a single edge doesn't have a most damaging node. Let's check if that
@@ -60,8 +72,16 @@ def test_two_paths_by_len():
     graph = Graph([(0,1), (1,4), (0,2), (2,3), (3,4)], directed=True)
     graph.es['type'] = ['up']*5
 
+    # check that it chose the correct path by looking at the most damaging node
     node = most_detrimental(graph, 0, 4)
     assert node == 1
+
+    # what are the influences of the two possible paths?
+    influences = [influence(graph.es['type'][:2]), influence(graph.es['type'][2:])]
+
+    # also check that it calculated the correct damages
+    damages = damage(graph, 0, 4)
+    assert damages[node] == (influences[1]-influences[0])
 
 
 # Check that the correct path is chosen when there are two possible paths, and one has
@@ -85,6 +105,13 @@ def test_two_paths_by_color():
     node = most_detrimental(graph, 0, 3)
     assert node == 1
 
+    # what are the influences of the two possible paths?
+    influences = [influence(graph.es['type'][:2]), influence(graph.es['type'][2:])]
+
+    # also check that it calculated the correct damages
+    damages = damage(graph, 0, 3)
+    assert damages[node] == (influences[1]-influences[0])
+
 
 # Check that the correct path is chosen when there are two possible paths, and one has
 # more alternating edges and the other is longer
@@ -102,27 +129,42 @@ def test_two_paths_by_color():
 def test_two_paths_by_len_and_color():
     # create a graph with two possible paths to the source
     # where the best path isn't clear and depends on alpha
-
-    # case 1: alpha == 1 (the default)
     graph = Graph([(0,1), (1,4), (0,2), (2,3), (3,4)], directed=True)
     graph.es['type'] = ['up', 'down', 'up', 'up', 'up']
+
+    # case 1: alpha == 1 (the default)
     node = most_detrimental(graph, 0, 4)
     # any of the intermediate nodes could be most detrimental
     assert node in (1, 2, 3)
 
+    # also check that it calculated the correct damages
+    # they should all be the same (ie 0)
+    damages = damage(graph, 0, 4)
+    assert damages[1] == 0
+    assert damages[2] == 0
+    assert damages[3] == 0
+
     # case 2: alpha == 1/2
-    graph = Graph([(0,1), (1,4), (0,2), (2,3), (3,4)], directed=True)
-    graph.es['type'] = ['up', 'down', 'up', 'up', 'up']
     node = most_detrimental(graph, 0, 4, alpha=0.5)
     # the path that passes through node 1 is better
     assert node == 1
 
+    # what are the influences of the two possible paths?
+    influences = [influence(graph.es['type'][:2], alpha=0.5), influence(graph.es['type'][2:], alpha=0.5)]
+    # also check that it calculated the correct damages
+    damages = damage(graph, 0, 4, alpha=0.5)
+    assert damages[node] == (influences[1]-influences[0])
+
     # case 3: alpha == 2
-    graph = Graph([(0,1), (1,4), (0,2), (2,3), (3,4)], directed=True)
-    graph.es['type'] = ['up', 'down', 'up', 'up', 'up']
     node = most_detrimental(graph, 0, 4, alpha=2)
     # the path that passes through nodes 2 and 3 is better
     assert node in (2, 3)
+
+    # what are the influences of the two possible paths?
+    influences = [influence(graph.es['type'][:2], alpha=2), influence(graph.es['type'][2:], alpha=2)]
+    # also check that it calculated the correct damages
+    damages = damage(graph, 0, 4, alpha=2)
+    assert damages[node] == (influences[0]-influences[1])
 
 
 # Check that the code can correctly ignore stray edges that can't be reached from the
