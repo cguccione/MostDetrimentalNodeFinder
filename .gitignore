@@ -137,4 +137,8 @@ data/
 .Rproj.user
 
 # mac icon 
-.DS_Store
+i.DS_Store
+
+#Caitlin Added
+node_finder/Caitlin_Notes.txt
+.gitignore.swp
