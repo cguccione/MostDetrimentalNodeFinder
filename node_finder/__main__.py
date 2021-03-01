@@ -3,6 +3,7 @@ import sys
 import click
 import igraph
 from sortedcontainers import SortedDict
+from collections import defaultdict
 
 
 def damage(graph, source, sink, alpha=1):
@@ -23,15 +24,18 @@ def damage(graph, source, sink, alpha=1):
     #print(graph.vcount()) #The number of vertices in the graph
     graph.vs['preColor'] = ['NA']*graph.vcount() #Adds a new attribute - pre-color to each NODE which tells us what the color of the edge from oldNode--Node is
 
-    influence = SortedDict() #Initalize Influence- Priority Queue/Sorted Dict- Will hold Node:Damage
+    influence = SortedDict() #Initalize Influence- Priority Queue/Sorted Dict- Will hold Node: Influence
+    Damage = defaultdic(SortedDict) #Initalize Damage- Dictionary of: Priority Queue/Sorted Dic- Will hold: Node [Node] = Damge
 
     ## first, initialize values for every unvisited node
     for v in graph.vs: #Loops through all list vertices in the graph
         #print(v) #Prints the entire node object, ex: igraph.Vertex(<igraph.Graph object at 0x7fa1a70cfc70>, 0, {})
         #print(v.index) #Prints just the node itself, ex: 0
         influence[v.index] = float('inf')
+        Damage[v.index][source] = float('inf')
 
     influence[source] = 0 #Set the source node to 0
+    Damage[source] = SortedDict()
 
     print("Influence Priority Queue:", influence)
 
@@ -40,15 +44,18 @@ def damage(graph, source, sink, alpha=1):
     print("Source Object", graph.vs.find(source)) #This finds the igraph object related to source
     source = graph.vs.find(source)
 
+    vistedNodes=[] #The index(number only) of all nodes which have already been visited
+
+
     node = source #Node will hold our current node and starts with our source node-- This holds the igraph object
-    while node != sink: #while sink is unvisited
+    while node.index != sink: #while sink is unvisited
         outEdges = node.out_edges() #Find all child nodes
         for i in outEdges: #Loop through all child nodes
             #print(i.target_vertex.index) #Just the node number
             #print(i.target_vertex) #The igraph object
 
             ##count the current edge
-            influence[i.target_vertex.index] = influence[node.index] + 1
+            newInfluence = influence[node.index] + 1
 
             ##check if the edge oldNode---node and node--new_node(i) are the same 'color'
             print("Attirbutes of Old Node--Node Edge, stored in Node", i.target_vertex.attributes())
@@ -61,21 +68,43 @@ def damage(graph, source, sink, alpha=1):
             ### Can us te walkaround below instead-- if node != source: #If we have the source node, then we don't need to check the previous edge becuase it doesn't exist
             #First check to make sure that we are not at the source: NA, then if the edges still aren't equal then add alpha to influence
             if Old2Node != 'NA' and Old2Node != Node2New:
-                influence[i.target_vertex.index] = influence[i.target_vertex.index] + alpha
+                newInfluence = newInfluence + alpha
+
+            ##update the damages stored in the child
+            #for other in Damage[node.index]: #for every node other that has been visited on the path to child:
+
+
+            
+            ##Update inflence function
+            if influence[i.target_vertex.index] > newInfluence:
+               influence[i.target_vertex.index] = newInfluence
+               #Updating the preColor for the current 
+               print("Check vertex", i.target_vertex)
+               i.target_vertex['preColor'] = str(Node2New)
+               print("Check vertex", i.target_vertex)
 
 
             print("Influence Priority Queue:", influence)
 
+        ##Add current node to the visted Nodes
+        vistedNodes.append(node.index)
+        print("vistedNodes", vistedNodes)
 
-
-        break
-
-
+        #an unvisited node with the smallest influence from source
+        for Node, infVal in influence.items(): #Loops through infuence priority queue in order- should be shorted
+            print(Node, infVal)#Node and correspoinding value -- These should be in order based on value
+            if Node not in vistedNodes: #Once we hit something that is not in vistedNodes, then this is the smallest inflence that hasn't been visited as desired
+                node = graph.vs.find(Node)
+                print("node", node)
+                break
+        
+    ##Check Point
+    print("--------------------------------------")
+    print("Final Node", node)
+    print("Influence Priority Queue:", influence)
 
 
     damgeMatrix = {}
-
-
     sd = SortedDict({'A': 1, 'B': 3}) #Sorts based upon the value
     return sd
     #return damages
