@@ -25,7 +25,7 @@ def damage(graph, source, sink, alpha=1):
     graph.vs['preColor'] = ['NA']*graph.vcount() #Adds a new attribute - pre-color to each NODE which tells us what the color of the edge from oldNode--Node is
 
     influence = SortedDict() #Initalize Influence- Priority Queue/Sorted Dict- Will hold Node: Influence
-    Damage = defaultdic(SortedDict) #Initalize Damage- Dictionary of: Priority Queue/Sorted Dic- Will hold: Node [Node] = Damge
+    Damage = defaultdict(SortedDict) #Initalize Damage- Dictionary of: Priority Queue/Sorted Dic- Will hold: Node [Node] = Damge
 
     ## first, initialize values for every unvisited node
     for v in graph.vs: #Loops through all list vertices in the graph
