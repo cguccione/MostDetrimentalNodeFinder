@@ -38,14 +38,17 @@ def damage(graph, source, sink, alpha=1):
     Damage[source] = SortedDict()
 
     print("Influence Priority Queue:", influence)
+    print()
 
     ##run a modified Dijkstra's algorithm
-    print("Source", source) #Currently source is just the number 0, or whatever node this corresponds to
-    print("Source Object", graph.vs.find(source)) #This finds the igraph object related to source
+    #print("Source", source) #Currently source is just the number 0, or whatever node this corresponds to
+    #print("Source Object", graph.vs.find(source)) #This finds the igraph object related to source
     source = graph.vs.find(source)
 
     vistedNodes=[] #The index(number only) of all nodes which have already been visited
-
+    bestPath= defaultdict(list) #Key: node,  Def:List of nodes on best path between source and node - not including source or child
+    bestPath[0] #{0:[]} 
+    #print ("BEST", bestPath)
 
     node = source #Node will hold our current node and starts with our source node-- This holds the igraph object
     while node.index != sink: #while sink is unvisited
@@ -64,87 +67,84 @@ def damage(graph, source, sink, alpha=1):
             Node2New = i.attributes()['type']
             print('OldNode--Node', Old2Node)
             print('Node--NewNode', Node2New)
+            print()
 
             ### Can us te walkaround below instead-- if node != source: #If we have the source node, then we don't need to check the previous edge becuase it doesn't exist
             #First check to make sure that we are not at the source: NA, then if the edges still aren't equal then add alpha to influence
             if Old2Node != 'NA' and Old2Node != Node2New:
                 newInfluence = newInfluence + alpha
 
-            ##update the damages stored in the child
-            #for other in Damage[node.index]: #for every node other that has been visited on the path to child:
-
-
-            
             ##Update inflence function
-            if influence[i.target_vertex.index] > newInfluence:
+            if influence[i.target_vertex.index] > newInfluence: #If we want to take this path?
                influence[i.target_vertex.index] = newInfluence
-               #Updating the preColor for the current 
-               print("Check vertex", i.target_vertex)
-               i.target_vertex['preColor'] = str(Node2New)
-               print("Check vertex", i.target_vertex)
+               #Update best path
+               bestPath[node.index].append(i.target_vertex.index)
 
+            ##update the damages stored in the child
+            #for other in Damage[node.index]: # for every node other on the best path between source and child:
+            currentNodeBestPath = bestPath[node.index] ###Should this be i.target_vertex.index ???
+            #This contains just node numbers, not igraph objects
+            for other in currentNodeBestPath:
+                #if other not in Damage[node.index]:
+                if other in Damage[node.index] and Damage[node.index][other] == float('inf'):
+                    new_damge = float('inf')
+                else:
+                    new_damge = newInfluence - influence[i.target_vertex.index]
+                    #print("------------------------------------------", new_damge)
+                    #print("newInfluence", newInfluence)
+                if other in Damage[i.target_vertex.index]:
+                    current_damge = Damage[i.target_vertex.index][other]
+                    final_damage = max(current_damge, new_damge)
+                    Damage[i.target_vertex.index][other] = final_damage
+                else:
+                    Damage[i.target_vertex.index][other] = new_damge
+            
+            ''' MOVED ABOVE
+            ##Update inflence function
+            if influence[i.target_vertex.index] > newInfluence: #If we want to take this path?
+               influence[i.target_vertex.index] = newInfluence
+               #Update best path
+               bestPath[node.index].append(i.target_vertex.index) 
+            '''
+
+            #Updating the preColor for the current  --- Should this be outside the loop?
+            #print("Check vertex", i.target_vertex)
+            i.target_vertex['preColor'] = str(Node2New)
+            #print("Check vertex", i.target_vertex)
 
             print("Influence Priority Queue:", influence)
+            print("Damges", Damage)
+
 
         ##Add current node to the visted Nodes
         vistedNodes.append(node.index)
         print("vistedNodes", vistedNodes)
+        print("")
 
         #an unvisited node with the smallest influence from source
         for Node, infVal in influence.items(): #Loops through infuence priority queue in order- should be shorted
-            print(Node, infVal)#Node and correspoinding value -- These should be in order based on value
+            #print(Node, infVal)#Node and correspoinding value -- These should be in order based on value
             if Node not in vistedNodes: #Once we hit something that is not in vistedNodes, then this is the smallest inflence that hasn't been visited as desired
                 node = graph.vs.find(Node)
-                print("node", node)
+                #print("node", node)
                 break
         
     ##Check Point
-    print("--------------------------------------")
-    print("Final Node", node)
+    print("----------------------------------------------------------------------------")
+    print("Final Node: ", node.index)
     print("Influence Priority Queue:", influence)
+    print("Damage:", Damage)
 
-
-    damgeMatrix = {}
-    sd = SortedDict({'A': 1, 'B': 3}) #Sorts based upon the value
-    return sd
-    #return damages
+    return Damage[sink]
 
 def most_detrimental(graph, source, sink, alpha=1):
     """
         return a node that, when removed, will cause the most damage to a shortest path
         between source and sink in the directed graph
-
-        Variables:
-        influence
     """
-
-    
-    #Testing igraph
-
-    #print("-----------")
-    #print("Graph", graph)
-    #print("----")
     print("Graph Edges", graph.get_edgelist())
     print("Graph Type", graph.es['type'])
-    """
-    print("Input: name of the node, Ouput node as an object", graph.vs.find(source))
-    node = graph.vs.find(source)
-    print("Finds all edges going out of the node: Gives a list of edges", node.out_edges())
-    outEdges = node.out_edges()
-
-    for edge in graph.get_edgelist():
-        print(edge)
-
-    print ("-----------")
-    for i in outEdges:
-        print(i.attributes()) #Edges attributes
-        #Target node is the the node that the current edge is pointing to 
-        print(i.target_vertex) #Gives the node object
-        print(i.target_vertex.attributes()) #Give the attributes of the nodes (for our case we don't have this)
-        print(i.target_vertex.index) #Gives the node itself again - finds index on the node
-        print(i.target) #Gives the node itself
-    """
-
+    print()
 
     damages = damage(graph, source, sink, alpha=1) 
     #Damges = priority queue (SortedDict object): only has the sink node ('one-column'), 
