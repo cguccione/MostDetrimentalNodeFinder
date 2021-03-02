@@ -10,7 +10,7 @@ pip install -e '.[test]'
 ```
 
 ## Usage
-### Via the python API
+### Via our python module
 Our code utilizes the `python-igraph` library for graph representation. You must first create a graph with that library before executing our code.
 ```
 import node_finder
