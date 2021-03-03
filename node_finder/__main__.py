@@ -18,6 +18,10 @@ def damage_at_child(old_child_damage, new_child_damage, old_influence, new_influ
     '''
     if old_influence > new_influence: #Replace the damages completley
         new_damage = old_influence - new_influence
+        print("---")
+        print("Old Inf", old_influence)
+        print("New Inf", new_influence)
+        print("NEW DAMAGA P1", new_damage)
         child_damage = new_child_damage.copy()
         for node, damage in new_child_damage.items(): #new_child_damage -- shoudln't contain itself (the child)
             #child_damage[node]=min(new_damage, damage, old_child_damage.get(node, float('inf')))
@@ -28,6 +32,7 @@ def damage_at_child(old_child_damage, new_child_damage, old_influence, new_influ
                 print("Are we hitting line 28")
                 #child_damage[node]=min(new_damage, damage, old_child_damage.get(node, float('inf')))
                 #child_damage[node]=min(new_damage, damage, old_child_damage.get(node, float('inf')))
+                print("NEW DAMAGA", new_damage)
                 child_damage[node]=min(new_damage, damage)
 
     else: #Updating the old damages
@@ -172,7 +177,8 @@ def damage(graph, source, sink, alpha=1):
                 #print("node", node)
                 break
     
-    del Damage[sink][sink]
+    #del Damage[sink][sink]
+    Damage[sink].pop(sink, None)
 
     ##Check Point
     print("----------------------------------------------------------------------------")
@@ -191,17 +197,30 @@ def most_detrimental(graph, source, sink, alpha=1):
     """
     print("Graph Edges", graph.get_edgelist())
     print("Graph Type", graph.es['type'])
+    
+    #print(graph.es.attributes())
+    #print(graph.vs.find(14))
+    #return()
+    print("Check index", graph.vs.find(source))
+    source = graph.vs.find(source).index
+    sink = graph.vs.find(sink).index
+    #print(source, sink)
     print()
 
     damages = damage(graph, source, sink, alpha) 
     #Damges = priority queue (SortedDict object): only has the sink node ('one-column'), 
     #{sink:{"node1": "damage of removing node1 in path from source to sink", "node2: "....""}}
 
-    try: 
-        return max(damages, key = damages.get)#Finding the maximum node from the priority queue  Damages
+    try:
+        maxIndex = max(damages, key = damages.get) #Finding the maximum node from the priority queue  Damages
+        #print(graph.vs[maxIndex]["name"])
+        if "name" in graph.vs[maxIndex].attributes():
+            return graph.vs[maxIndex]["name"]
+        else: 
+            return maxIndex
     except ValueError:
         pass #Doesn't do anything
-
+    
 
 @click.group()
 @click.version_option()
