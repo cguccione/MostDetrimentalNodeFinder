@@ -5,6 +5,35 @@ import igraph
 from sortedcontainers import SortedDict
 from collections import defaultdict
 
+def damage_at_child(old_child_damage, new_child_damage, old_influence, new_influence, child):
+    '''Inputs:
+    old_child_damage: Priority Queue (sorted Dict) {{1:2}, {3:2}}
+    new_child_damage: Priority Queue (sorted Dict)
+    old_influence : Influence currently at the child
+    new_influence : Possibly better influence at the child
+    child: index of the child
+
+    -Consturcts a new prioroty queue which represents the damages at the child
+    -Constructs from either the old or new priority queue
+    '''
+    if old_influence > new_influence: #Replace the damages completley
+        new_damage = old_influence - new_influence
+        child_damage = new_child_damage.copy()
+        for node, damage in new_child_damage.items(): #new_child_damage -- shoudln't contain itself (the child)
+            #child_damage[node]=min(new_damage, damage, old_child_damage.get(node, float('inf')))
+            if node in old_child_damage: #Will be true if we have alread touched this child ## True for node 1 but not node 4
+                child_damage[node]=min(damage, old_child_damage.get(node, float('inf')))
+            else:
+                child_damage[node]=min(new_damage, damage, old_child_damage.get(node, float('inf')))
+
+    else: #Updating the old damages
+        new_damage = new_influence - old_influence
+        child_damage = old_child_damage
+        for node,damage in old_child_damage.items():
+            child_damage[node]=min(new_damage, damage)
+    child_damage[child] = float("inf")
+    return child_damage
+
 
 def damage(graph, source, sink, alpha=1):
     """
@@ -74,11 +103,21 @@ def damage(graph, source, sink, alpha=1):
             if Old2Node != 'NA' and Old2Node != Node2New:
                 newInfluence = newInfluence + alpha
 
+            old_child_damage = Damage[i.target_vertex.index] #child
+            new_child_damage = Damage[node.index] #node
+            old_influence = influence[i.target_vertex.index]
+            new_influence = newInfluence #The term we have been calculating above
+            child = i.target_vertex.index #Child index
+            child_damage = damage_at_child(old_child_damage, new_child_damage, old_influence, new_influence, child)
+            Damage[child]= child_damage
             
+            '''3/3/21 Moved this to damage_at_child function above
             for other in Damage[i.target_vertex.index].keys():
                 print("Node", node.index)
                 print("Child", i.target_vertex.index)
                 print("Other", other)
+
+
                 #if other not in Damage[node.index]:
                 if other in Damage[node.index] and Damage[node.index][other] == float('inf'):
                     new_damge = float('inf')
@@ -100,7 +139,9 @@ def damage(graph, source, sink, alpha=1):
                 Damage[i.target_vertex.index][i.target_vertex.index] = float('inf')
                 Damage[i.target_vertex.index].update(Damage[node.index]) #Copies all values from node.index into child.inex
             #Ensures that the sorted dictionarires will contain the nodes of the best path from source(not included) to node            
-        
+            '''
+
+
             ##Update inflence function
             if influence[i.target_vertex.index] > newInfluence: #If we want to take this path?
                influence[i.target_vertex.index] = newInfluence
@@ -133,6 +174,7 @@ def damage(graph, source, sink, alpha=1):
     print("Influence Priority Queue:", influence)
     print("Damage:", Damage)
     print("Damage SINK:", Damage[sink])
+    print("PEEK", Damage[sink].peekitem(index = -1)[0])
 
     return Damage[sink]
 
