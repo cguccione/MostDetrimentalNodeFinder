@@ -30,18 +30,18 @@ def test_infinity():
 
     # also check that the damage comes out to infinity, as desired
     damages = damage(graph, 0, 5)
-    assert damages.get(node, default=0) == float('inf')
+    assert damages.get(node, 0) == float('inf')
 
     # check that the damage of node 4 is 1, since the path that passes through node 4
     # is the best one and has influence 4 but there's two more that both have an
     # influence of 5:
     # 5-4 = 1
-    assert damages.get(4, default=0) == 1
+    assert damages.get(4, 0) == 1
 
     # the damages of nodes 2 and 3 should be 0, since the most influential path doesn't
     # pass through those nodes
-    assert damages.get(2, default=0) == 0
-    assert damages.get(3, default=0) == 0
+    assert damages.get(2, 0) == 0
+    assert damages.get(3, 0) == 0
 
 
 # In this graph, any of the nodes could be the most damaging! All should have damage 0
@@ -69,7 +69,7 @@ def test_all_same_damages():
     # also check that each node's damage comes out to 0, as desired
     damages = damage(graph, 0, 5)
     for node in (1, 2, 3, 4):
-        assert damages.get(node, default=0) == 0
+        assert damages.get(node, 0) == 0
 
 
 # This graph helps test whether our code works for bowtie-like graphs, where two paths
@@ -116,20 +116,20 @@ def test_bowtie():
 
     # also check that the most damage comes out to infinity, as desired
     damages = damage(graph, 0, 7)
-    assert damages.get(node, default=0) == float('inf')
+    assert damages.get(node, 0) == float('inf')
 
     # check that the damages of nodes 4, 5, and 6 is 1 since the best path passes
     # through those nodes and it has an influence of 4, whereas the next best path has
     # an influence of 5 (because it alternates colors, even though it is shorter)
     # 5-4 = 1
-    assert damages.get(4, default=0) == 1
-    assert damages.get(5, default=0) == 1
+    assert damages.get(4, 0) == 1
+    assert damages.get(5, 0) == 1
     assert daamges[6] == 1
 
     # the damage of the other nodes should be 0, since the most influential path
     # doesn't pass through them
-    assert damages.get(1, default=0) == 0
-    assert damages.get(2, default=0) == 0
+    assert damages.get(1, 0) == 0
+    assert damages.get(2, 0) == 0
 
     # now, let's try the bowtie!
     node = most_detrimental(graph, 0, 9)
@@ -137,24 +137,24 @@ def test_bowtie():
 
     # also check that the most damage comes out to infinity, as desired
     damages = damage(graph, 0, 9)
-    assert damages.get(7, default=0) == float('inf')
+    assert damages.get(7, 0) == float('inf')
 
     # check that the damages of node 8 is 1 since the best path passes
     # through that node and it has a total influence of 7, whereas the next best path
     # has an influence of 8 (because it has one alternating node)
     # 8-7 = 1
-    assert damages.get(8, default=0) == 1
+    assert damages.get(8, 0) == 1
 
     # the damage of the other node should be 0, since the most influential path
     # doesn't pass it
-    assert damages.get(10, default=0) == 0
+    assert damages.get(10, 0) == 0
 
     # just in case, assert that the damages of the other nodes haven't changed
-    assert damages.get(1, default=0) == 0
-    assert damages.get(2, default=0) == 0
-    assert damages.get(3, default=0) == float('inf')
-    assert damages.get(4, default=0) == 1
-    assert damages.get(5, default=0) == 1
+    assert damages.get(1, 0) == 0
+    assert damages.get(2, 0) == 0
+    assert damages.get(3, 0) == float('inf')
+    assert damages.get(4, 0) == 1
+    assert damages.get(5, 0) == 1
     assert daamges[6] == 1
 
 
@@ -190,9 +190,9 @@ def test_cycle():
 
         # also check that the most damage comes out to infinity, as desired
         damages = damage(graph, 0, 3, alpha)
-        assert damages.get(1, default=0) == float('inf')
-        assert damages.get(2, default=0) == float('inf')
+        assert damages.get(1, 0) == float('inf')
+        assert damages.get(2, 0) == float('inf')
 
         # and check that the damage of node 4 is 0, since the most influential path
         # should not pass through it!
-        assert damages.get(4, default=0) == 0
+        assert damages.get(4, 0) == 0
