@@ -53,7 +53,7 @@ def test_infinity():
 # 2->3 d
 # 1->3 d
 # 1->4 d
-# 3->5 u
+# 3->5 d
 # 4->5 d
 
 # SOURCE: 0
@@ -61,7 +61,7 @@ def test_infinity():
 
 def test_all_same_damages():
     graph = Graph([(0,1), (0,2), (2,3), (1,3), (1,4), (3,5), (4,5)], directed=True)
-    graph.es['type'] = ['up', 'up', 'down', 'down', 'down', 'up', 'down']
+    graph.es['type'] = ['up', 'up', 'down', 'down', 'down', 'down', 'down']
 
     node = most_detrimental(graph, 0, 5)
     assert node in (1, 2, 3, 4)
