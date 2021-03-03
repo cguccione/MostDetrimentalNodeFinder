@@ -22,9 +22,13 @@ def damage_at_child(old_child_damage, new_child_damage, old_influence, new_influ
         for node, damage in new_child_damage.items(): #new_child_damage -- shoudln't contain itself (the child)
             #child_damage[node]=min(new_damage, damage, old_child_damage.get(node, float('inf')))
             if node in old_child_damage: #Will be true if we have alread touched this child ## True for node 1 but not node 4
-                child_damage[node]=min(damage, old_child_damage.get(node, float('inf')))
+                #child_damage[node]=min(damage, old_child_damage.get(node, float('inf')))
+                child_damage[node]=min(damage, old_child_damage[node])
             else:
-                child_damage[node]=min(new_damage, damage, old_child_damage.get(node, float('inf')))
+                print("Are we hitting line 28")
+                #child_damage[node]=min(new_damage, damage, old_child_damage.get(node, float('inf')))
+                #child_damage[node]=min(new_damage, damage, old_child_damage.get(node, float('inf')))
+                child_damage[node]=min(new_damage, damage)
 
     else: #Updating the old damages
         new_damage = new_influence - old_influence
@@ -53,8 +57,9 @@ def damage(graph, source, sink, alpha=1):
     #print(graph.vcount()) #The number of vertices in the graph
     graph.vs['preColor'] = ['NA']*graph.vcount() #Adds a new attribute - pre-color to each NODE which tells us what the color of the edge from oldNode--Node is
 
-    influence = SortedDict() #Initalize Influence- Priority Queue/Sorted Dict- Will hold Node: Influence
-    Damage = defaultdict(SortedDict) #Initalize Damage- Dictionary of: Priority Queue/Sorted Dic- Will hold: Node [Node] = Damge
+    #influence = SortedDict() #Initalize Influence- Priority Queue/Sorted Dict- Will hold Node: Influence
+    influence = {}
+    Damage = defaultdict(dict) #Initalize Damage- Dictionary of: Priority Queue/Sorted Dic- Will hold: Node [Node] = Damge
 
     ## first, initialize values for every unvisited node
     for v in graph.vs: #Loops through all list vertices in the graph
@@ -63,7 +68,8 @@ def damage(graph, source, sink, alpha=1):
         influence[v.index] = float('inf')
 
     influence[source] = 0 #Set the source node to 0
-    Damage[source] = SortedDict()
+    #Damage[source] = SortedDict()
+    Damage[source] = {}
 
     print("Influence Priority Queue:", influence)
     print()
@@ -174,7 +180,7 @@ def damage(graph, source, sink, alpha=1):
     print("Influence Priority Queue:", influence)
     print("Damage:", Damage)
     print("Damage SINK:", Damage[sink])
-    print("PEEK", Damage[sink].peekitem(index = -1)[0])
+    #print("PEEK", max(Damage[sink], key = Damage[sink].get))
 
     return Damage[sink]
 
@@ -192,8 +198,8 @@ def most_detrimental(graph, source, sink, alpha=1):
     #{sink:{"node1": "damage of removing node1 in path from source to sink", "node2: "....""}}
 
     try: 
-        return damages.peekitem(index = -1)[0] #Finding the maximum node from the priority queue  Damages
-    except IndexError:
+        return max(damages, key = damages.get)#Finding the maximum node from the priority queue  Damages
+    except ValueError:
         pass #Doesn't do anything
 
 
