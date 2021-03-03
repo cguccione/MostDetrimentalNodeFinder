@@ -81,7 +81,7 @@ def test_two_paths_by_len():
 
     # also check that it calculated the correct damages
     damages = damage(graph, 0, 4)
-    assert damages[node] == (influences[1]-influences[0])
+    assert damages.get(node, default=0) == (influences[1]-influences[0])
 
 
 # Check that the correct path is chosen when there are two possible paths, and one has
@@ -110,7 +110,7 @@ def test_two_paths_by_color():
 
     # also check that it calculated the correct damages
     damages = damage(graph, 0, 3)
-    assert damages[node] == (influences[1]-influences[0])
+    assert damages.get(node, default=0) == (influences[1]-influences[0])
 
 
 # Check that the correct path is chosen when there are two possible paths, and one has
@@ -140,9 +140,9 @@ def test_two_paths_by_len_and_color():
     # also check that it calculated the correct damages
     # they should all be the same (ie 0)
     damages = damage(graph, 0, 4)
-    assert damages[1] == 0
-    assert damages[2] == 0
-    assert damages[3] == 0
+    assert damages.get(1, default=0) == 0
+    assert damages.get(2, default=0) == 0
+    assert damages.get(3, default=0) == 0
 
     # case 2: alpha == 1/2
     node = most_detrimental(graph, 0, 4, alpha=0.5)
@@ -153,7 +153,7 @@ def test_two_paths_by_len_and_color():
     influences = [influence(graph.es['type'][:2], alpha=0.5), influence(graph.es['type'][2:], alpha=0.5)]
     # also check that it calculated the correct damages
     damages = damage(graph, 0, 4, alpha=0.5)
-    assert damages[node] == (influences[1]-influences[0])
+    assert damages.get(node, default=0) == (influences[1]-influences[0])
 
     # case 3: alpha == 2
     node = most_detrimental(graph, 0, 4, alpha=2)
@@ -164,7 +164,7 @@ def test_two_paths_by_len_and_color():
     influences = [influence(graph.es['type'][:2], alpha=2), influence(graph.es['type'][2:], alpha=2)]
     # also check that it calculated the correct damages
     damages = damage(graph, 0, 4, alpha=2)
-    assert damages[node] == (influences[0]-influences[1])
+    assert damages.get(node, default=0) == (influences[0]-influences[1])
 
 
 # Check that the code can correctly ignore stray edges that can't be reached from the
