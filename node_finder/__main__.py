@@ -32,7 +32,7 @@ def damage(graph, source, sink, alpha=1):
         #print(v) #Prints the entire node object, ex: igraph.Vertex(<igraph.Graph object at 0x7fa1a70cfc70>, 0, {})
         #print(v.index) #Prints just the node itself, ex: 0
         influence[v.index] = float('inf')
-        Damage[v.index][source] = float('inf')
+        Damage[v.index][v.index] = float('inf')
 
     influence[source] = 0 #Set the source node to 0
     Damage[source] = SortedDict()
@@ -46,9 +46,10 @@ def damage(graph, source, sink, alpha=1):
     source = graph.vs.find(source)
 
     vistedNodes=[] #The index(number only) of all nodes which have already been visited
-    bestPath= defaultdict(list) #Key: node,  Def:List of nodes on best path between source and node - not including source or child
-    bestPath[0] #{0:[]} 
-    #print ("BEST", bestPath)
+    
+    ####bestPath= defaultdict(list) #Key: node,  Def:List of nodes on best path between source and node - not including source or child
+    ####bestPath[0] #{0:[]} 
+    ####print ("BEST", bestPath)
 
     node = source #Node will hold our current node and starts with our source node-- This holds the igraph object
     while node.index != sink: #while sink is unvisited
@@ -74,38 +75,57 @@ def damage(graph, source, sink, alpha=1):
             if Old2Node != 'NA' and Old2Node != Node2New:
                 newInfluence = newInfluence + alpha
 
+            '''
             ##Update inflence function
             if influence[i.target_vertex.index] > newInfluence: #If we want to take this path?
                influence[i.target_vertex.index] = newInfluence
                #Update best path
                bestPath[node.index].append(i.target_vertex.index)
+            '''
 
             ##update the damages stored in the child
             #for other in Damage[node.index]: # for every node other on the best path between source and child:
-            currentNodeBestPath = bestPath[node.index] ###Should this be i.target_vertex.index ???
+
+            #####currentNodeBestPath = bestPath[node.index] ###Should this be i.target_vertex.index ???
             #This contains just node numbers, not igraph objects
-            for other in currentNodeBestPath:
-                #if other not in Damage[node.index]:
-                if other in Damage[node.index] and Damage[node.index][other] == float('inf'):
-                    new_damge = float('inf')
-                else:
-                    new_damge = newInfluence - influence[i.target_vertex.index]
-                    #print("------------------------------------------", new_damge)
-                    #print("newInfluence", newInfluence)
-                if other in Damage[i.target_vertex.index]:
-                    current_damge = Damage[i.target_vertex.index][other]
-                    final_damage = max(current_damge, new_damge)
-                    Damage[i.target_vertex.index][other] = final_damage
-                else:
-                    Damage[i.target_vertex.index][other] = new_damge
+
+            #####for other in currentNodeBestPath:
+
+            if influence[i.target_vertex.index] > newInfluence: #If we are on the best path
+                Damage[i.target_vertex.index].update(Damage[node.index]) #Copies all values from node.index into child.inex
+            #Ensures that the sorted dictionarires will contain the nodes of the best path from source(not included) to node
+
+            else:
+                #for other in Damage[node.index].keys():
+                for other in Damage[i.target_vertex.index].keys():
+                    print("Node", node.index)
+                    print("Child", i.target_vertex.index)
+                    print("Other", other)
+                    #if other not in Damage[node.index]:
+                    if other in Damage[node.index] and Damage[node.index][other] == float('inf'):
+                        new_damge = float('inf')
+                    else:
+                        new_damge = newInfluence - influence[i.target_vertex.index]
+                        print("------------------------------------------")
+                        print("newInfluence", newInfluence)
+                        print("Infludnce Child", influence[i.target_vertex.index])
+                        print("New Damage", new_damge)
+                    ##Update Damage
+                    if other in Damage[i.target_vertex.index]:
+                        current_damge = Damage[i.target_vertex.index][other]
+                        final_damage = min(current_damge, new_damge)
+                        Damage[i.target_vertex.index][other] = final_damage
+                    else:
+                        Damage[i.target_vertex.index][other] = new_damge
             
-            ''' MOVED ABOVE
+            
             ##Update inflence function
             if influence[i.target_vertex.index] > newInfluence: #If we want to take this path?
                influence[i.target_vertex.index] = newInfluence
+               
                #Update best path
-               bestPath[node.index].append(i.target_vertex.index) 
-            '''
+               #####bestPath[node.index].append(i.target_vertex.index) 
+            
 
             #Updating the preColor for the current  --- Should this be outside the loop?
             #print("Check vertex", i.target_vertex)
@@ -128,7 +148,9 @@ def damage(graph, source, sink, alpha=1):
                 node = graph.vs.find(Node)
                 #print("node", node)
                 break
-        
+    
+    del Damage[sink][sink]
+
     ##Check Point
     print("----------------------------------------------------------------------------")
     print("Final Node: ", node.index)
