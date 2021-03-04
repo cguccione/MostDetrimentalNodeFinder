@@ -84,7 +84,8 @@ def test_all_same_damages():
 # 0->4 d
 # 4->5 d
 # 5->6 d
-# 6->3 d
+# 6->11 d
+# 11->3 d
 # 3->7 d
 # 7->8 d
 # 8->9 d
@@ -102,12 +103,12 @@ def test_bowtie():
     # length: 2 edges) that split out from node 7 before converging again on node 9.
     # One of the final two paths has alternating edges while the other does not.
     graph = Graph([
-        (0, 1), (1, 2), (2, 3), (0, 4), (4, 5), (5, 6), (6, 3), (3, 7), (7, 8), (8, 9),
-        (7, 10), (10, 9)
+        (0, 1), (1, 2), (2, 3), (0, 4), (4, 5), (5, 6), (6, 11), (11, 3), (6, 3),
+        (3, 7), (7, 8), (8, 9), (7, 10), (10, 9)
     ], directed=True)
     graph.es['type'] = [
         'down', 'up', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down',
-        'up', 'down'
+        'down', 'up', 'down'
     ]
 
     # first, try the pincer
