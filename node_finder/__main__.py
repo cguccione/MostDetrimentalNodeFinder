@@ -65,7 +65,7 @@ def damage_at_child(old_child_damage, new_child_damage, old_influence, new_influ
     return child_damage
 
 
-def damage(graph, source, sink, alpha=1):
+def damage(graph, source, sink, alpha=1, also_return_visited=False):
     """
         return a final row of damges matrix 
 
@@ -248,9 +248,11 @@ def damage(graph, source, sink, alpha=1):
     print("Damage SINK:", Damage[sink])
     #print("PEEK", max(Damage[sink], key = Damage[sink].get))
 
+    if also_return_visited:
+        return Damage[sink], visited
     return Damage[sink]
 
-def most_detrimental(graph, source, sink, alpha=1):
+def most_detrimental(graph, source, sink, alpha=1, also_return_visited=False):
     """
         return a node that, when removed, will cause the most damage to a shortest path
         between source and sink in the directed graph
@@ -267,7 +269,10 @@ def most_detrimental(graph, source, sink, alpha=1):
     #print(source, sink)
     print()
 
-    damages = damage(graph, source, sink, alpha) 
+    if also_return_visited:
+        damages, visited = damage(graph, source, sink, alpha, also_return_visited)
+    else:
+        damages = damage(graph, source, sink, alpha)
     #Damges = priority queue (SortedDict object): only has the sink node ('one-column'), 
     #{sink:{"node1": "damage of removing node1 in path from source to sink", "node2: "....""}}
 
@@ -280,6 +285,8 @@ def most_detrimental(graph, source, sink, alpha=1):
     except ValueError:
         pass #Doesn't do anything
     
+    if also_return_visited:
+        return maxIndex, visited
     return maxIndex
 
 @click.group()
@@ -297,12 +304,14 @@ def main():
 @click.argument("source")
 @click.argument("sink")
 @click.argument("alpha", type=click.FLOAT, default=1)
-def read_sif(fname, source, sink, alpha=1):
+@click.option("--plot", help="also write a plot of the visited nodes to the provided file")
+def read_sif(fname, source, sink, alpha=1, plot=None):
     """ Run the most detrimental node finder on an SIF file """
 
     # first import pandas and load the sif adjacency list into a dataframe
     import pandas as pd
-    df = pd.read_csv(fname, sep = "\t", names = ["to","edge","from"])
+    df = pd.read_csv(fname, sep = "\t", names = ["to","edge","from"], dtype=str)
+    color_map = dict(zip(sorted(df['edge'].unique()), ('blue', 'red')))
 
     # convert to a graph
     graph = igraph.Graph.TupleList(df[["to","from"]].itertuples(index=False), directed = True)
@@ -312,9 +321,29 @@ def read_sif(fname, source, sink, alpha=1):
     # print(graph.get_shortest_paths(graph.vs.find(source), graph.vs.find(sink)))
 
     # run the most detrimenal node finder
-    node = most_detrimental(graph, source, sink, alpha)
-    # output the most detrimental node
-    click.echo('{}'.format(node))
+    if plot:
+        node, visited = most_detrimental(graph, source, sink, alpha, True)
+        # subset the graph to just the nodes that were visited
+        graph = graph.induced_subgraph(visited.keys())
+        # add node labels and edge colors
+        graph.vs["label"] = graph.vs["name"]
+        graph.vs.find(source)["color"] = 'green'
+        graph.vs.find(sink)["color"] = 'green'
+        graph.vs.find(node)["color"] = 'yellow'
+        graph.es["color"] = [color_map[edge_type] for edge_type in graph.es['type']]
+        # make the plots pretty
+        visual_style = {}
+        visual_style["vertex_size"] = 50
+        visual_style["vertex_label_size"] = 25
+        visual_style["edge_width"] = 4
+        # output the most detrimental node
+        click.echo('{}'.format(node))
+        # write a plot of the nodes that were visited
+        igraph.plot(graph, plot, **visual_style)
+    else:
+        node = most_detrimental(graph, source, sink, alpha)
+        # output the most detrimental node
+        click.echo('{}'.format(node))
 
 
 if __name__ == "__main__":
