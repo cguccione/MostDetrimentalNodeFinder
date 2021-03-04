@@ -2,7 +2,7 @@
 import sys
 import click
 import igraph
-from sortedcontainers import SortedDict
+from pqdict import pqdict
 from collections import defaultdict
 
 def damage_at_child(old_child_damage, new_child_damage, old_influence, new_influence, child):
@@ -39,7 +39,28 @@ def damage_at_child(old_child_damage, new_child_damage, old_influence, new_influ
         new_damage = new_influence - old_influence
         child_damage = old_child_damage
         for node,damage in old_child_damage.items():
+
             child_damage[node]=min(new_damage, damage)
+
+            if node in new_child_damage: #Already have a damage- 
+                print("ENTERING======================================================================")
+                print("new_child_damage[node]", new_child_damage[node])
+                print("new_damage", new_damage)
+                print("---")
+                #new_child_damage[node] - new_influence + old_influence
+                
+                if new_child_damage[node] < new_damage:
+                    NEW_damage = new_child_damage[node]
+                else:
+                    NEW_damage = new_child_damage[node] - new_damage
+
+                #A#NEW_damage = new_child_damage[node] - new_damage
+                print("NEW", NEW_damage)
+                print("damage", damage)
+                
+                child_damage[node] = min(NEW_damage, damage)
+                #green - pink           - green         + yellow
+
     child_damage[child] = float("inf")
     return child_damage
 
@@ -62,17 +83,28 @@ def damage(graph, source, sink, alpha=1):
     #print(graph.vcount()) #The number of vertices in the graph
     graph.vs['preColor'] = ['NA']*graph.vcount() #Adds a new attribute - pre-color to each NODE which tells us what the color of the edge from oldNode--Node is
 
-    #influence = SortedDict() #Initalize Influence- Priority Queue/Sorted Dict- Will hold Node: Influence
+    '''
+    influence = SortedDict() #Initalize Influence- Priority Queue/Sorted Dict- Will hold Node: Influence
     influence = {}
+    influence = SortedDict()
+    influence.key=influence.get'''
+    influence = pqdict()
+
     Damage = defaultdict(dict) #Initalize Damage- Dictionary of: Priority Queue/Sorted Dic- Will hold: Node [Node] = Damge
 
+    '''
     ## first, initialize values for every unvisited node
     for v in graph.vs: #Loops through all list vertices in the graph
         #print(v) #Prints the entire node object, ex: igraph.Vertex(<igraph.Graph object at 0x7fa1a70cfc70>, 0, {})
         #print(v.index) #Prints just the node itself, ex: 0
-        influence[v.index] = float('inf')
+        #influence[v.index] = float('inf')
+        influence[v.index] = float('inf')'''
+    influence = pqdict({v.index:float('inf') for v in graph.vs})## first, initialize values for every unvisited node
 
     influence[source] = 0 #Set the source node to 0
+    node_influence = 0
+    influence.pop(source) #Pops of source
+
     #Damage[source] = SortedDict()
     Damage[source] = {}
 
@@ -85,16 +117,25 @@ def damage(graph, source, sink, alpha=1):
     source = graph.vs.find(source)
 
     vistedNodes=[] #The index(number only) of all nodes which have already been visited
+
+    #Find all incoming edges of sink
+    print("SINK")
+    sinkObjects = graph.vs.find(sink).in_edges()
+    sinkINT = set(sinkObject.source for sinkObject in sinkObjects)
+
     
     node = source #Node will hold our current node and starts with our source node-- This holds the igraph object
-    while node.index != sink: #while sink is unvisited
+    #while node.index != sink: #while sink is unvisited
+    while len(sinkINT) != 0:
+        sinkINT.discard(node.index)
         outEdges = node.out_edges() #Find all child nodes
         for i in outEdges: #Loop through all child nodes
             #print(i.target_vertex.index) #Just the node number
             #print(i.target_vertex) #The igraph object
 
             ##count the current edge
-            newInfluence = influence[node.index] + 1
+            #newInfluence = influence[node.index] + 1
+            newInfluence = node_influence + 1
 
             print("NODE", node.index)
             print("NewNode", i.target_vertex.index)
@@ -116,6 +157,7 @@ def damage(graph, source, sink, alpha=1):
 
             old_child_damage = Damage[i.target_vertex.index] #child
             new_child_damage = Damage[node.index] #node
+            print("#####Influence Priority Queue:", influence)
             old_influence = influence[i.target_vertex.index]
             new_influence = newInfluence #The term we have been calculating above
             child = i.target_vertex.index #Child index
@@ -164,6 +206,11 @@ def damage(graph, source, sink, alpha=1):
             print("Damges", Damage)
 
 
+        nodeID, node_influence = influence.popitem() #This will pop off (and remove) the min item in our list
+        node = graph.vs.find(nodeID)
+
+
+        '''
         ##Add current node to the visted Nodes
         vistedNodes.append(node.index)
         print("vistedNodes", vistedNodes)
@@ -175,7 +222,8 @@ def damage(graph, source, sink, alpha=1):
             if Node not in vistedNodes: #Once we hit something that is not in vistedNodes, then this is the smallest inflence that hasn't been visited as desired
                 node = graph.vs.find(Node)
                 #print("node", node)
-                break
+                break'''
+        
     
     #del Damage[sink][sink]
     Damage[sink].pop(sink, None)
