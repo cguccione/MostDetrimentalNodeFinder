@@ -239,12 +239,18 @@ def main():
 @click.argument("alpha", type=click.FLOAT, default=1)
 def read_sif(fname, source, sink, alpha=1):
     """ Run the most detrimental node finder on an SIF file """
+
     # first import pandas and load the sif adjacency list into a dataframe
     import pandas as pd
     df = pd.read_csv(fname, sep = "\t", names = ["to","edge","from"])
+
     # convert to a graph
-    graph = igraph.Graph.DataFrame(df[["to","from"]], directed = True)
+    graph = igraph.Graph.TupleList(df[["to","from"]].itertuples(index=False), directed = True)
     graph.es['type'] = df["edge"]
+
+    # what does igraph think is the best path?
+    # print(graph.get_shortest_paths(graph.vs.find(source), graph.vs.find(sink)))
+
     # run the most detrimenal node finder
     node = most_detrimental(graph, source, sink, alpha)
     # output the most detrimental node
