@@ -3,7 +3,7 @@ import sys
 import click
 import igraph
 from pqdict import pqdict
-from collections import defaultdict
+from collections import defaultdict, ChainMap
 
 def damage_at_child(old_child_damage, new_child_damage, old_influence, new_influence, child):
     '''Inputs:
@@ -88,7 +88,10 @@ def damage(graph, source, sink, alpha=1):
     influence = {}
     influence = SortedDict()
     influence.key=influence.get'''
-    influence = pqdict()
+
+    # create a chainmap containing two dictionaries: unvisited and visited nodes, respectively
+    visited = {}
+    influence = ChainMap(pqdict(), visited)
 
     Damage = defaultdict(dict) #Initalize Damage- Dictionary of: Priority Queue/Sorted Dic- Will hold: Node [Node] = Damge
 
@@ -99,11 +102,11 @@ def damage(graph, source, sink, alpha=1):
         #print(v.index) #Prints just the node itself, ex: 0
         #influence[v.index] = float('inf')
         influence[v.index] = float('inf')'''
-    influence = pqdict({v.index:float('inf') for v in graph.vs})## first, initialize values for every unvisited node
+    # influence = pqdict({v.index:float('inf') for v in graph.vs})## first, initialize values for every unvisited node
 
-    influence[source] = 0 #Set the source node to 0
-    node_influence = 0
-    influence.pop(source) #Pops of source
+    # influence[source] = 0 #Set the source node to 0
+    # node_influence = 0
+    # influence.pop(source) #Pops of source
 
     #Damage[source] = SortedDict()
     Damage[source] = {}
@@ -115,19 +118,20 @@ def damage(graph, source, sink, alpha=1):
     #print("Source", source) #Currently source is just the number 0, or whatever node this corresponds to
     #print("Source Object", graph.vs.find(source)) #This finds the igraph object related to source
     source = graph.vs.find(source)
+    visited[source] = 0
 
     vistedNodes=[] #The index(number only) of all nodes which have already been visited
 
     #Find all incoming edges of sink
     print("SINK")
     sinkObjects = graph.vs.find(sink).in_edges()
-    sinkINT = set(sinkObject.source for sinkObject in sinkObjects)
+    #sinkINT = set(sinkObject.source for sinkObject in sinkObjects)
 
     
     node = source #Node will hold our current node and starts with our source node-- This holds the igraph object
     #while node.index != sink: #while sink is unvisited
-    while len(sinkINT) != 0:
-        sinkINT.discard(node.index)
+    while True:
+        #sinkINT.discard(node.index)
         outEdges = node.out_edges() #Find all child nodes
         for i in outEdges: #Loop through all child nodes
             #print(i.target_vertex.index) #Just the node number
@@ -135,7 +139,7 @@ def damage(graph, source, sink, alpha=1):
 
             ##count the current edge
             #newInfluence = influence[node.index] + 1
-            newInfluence = node_influence + 1
+            newInfluence = influence[node] + 1
 
             print("NODE", node.index)
             print("NewNode", i.target_vertex.index)
@@ -158,7 +162,7 @@ def damage(graph, source, sink, alpha=1):
             old_child_damage = Damage[i.target_vertex.index] #child
             new_child_damage = Damage[node.index] #node
             print("#####Influence Priority Queue:", influence)
-            old_influence = influence[i.target_vertex.index]
+            old_influence = influence[i.target_vertex] if i.target_vertex in influence else float('inf')
             new_influence = newInfluence #The term we have been calculating above
             child = i.target_vertex.index #Child index
             child_damage = damage_at_child(old_child_damage, new_child_damage, old_influence, new_influence, child)
@@ -175,10 +179,10 @@ def damage(graph, source, sink, alpha=1):
                 if other in Damage[node.index] and Damage[node.index][other] == float('inf'):
                     new_damge = float('inf')
                 else:
-                    new_damge = newInfluence - influence[i.target_vertex.index]
+                    new_damge = newInfluence - old_influence
                     print("------------------------------------------")
                     print("newInfluence", newInfluence)
-                    print("Infludnce Child", influence[i.target_vertex.index])
+                    print("Infludnce Child", old_influence)
                     print("New Damage", new_damge)
                 ##Update Damage
                 if other in Damage[i.target_vertex.index]:
@@ -188,7 +192,7 @@ def damage(graph, source, sink, alpha=1):
                 else:
                     Damage[i.target_vertex.index][other] = new_damge
 
-            if influence[i.target_vertex.index] > newInfluence: #If we are on the best path
+            if old_influence > newInfluence: #If we are on the best path
                 Damage[i.target_vertex.index][i.target_vertex.index] = float('inf')
                 Damage[i.target_vertex.index].update(Damage[node.index]) #Copies all values from node.index into child.inex
             #Ensures that the sorted dictionarires will contain the nodes of the best path from source(not included) to node            
@@ -196,8 +200,8 @@ def damage(graph, source, sink, alpha=1):
 
 
             ##Update inflence function
-            if influence[i.target_vertex.index] > newInfluence: #If we want to take this path?
-               influence[i.target_vertex.index] = newInfluence
+            if old_influence > newInfluence: #If we want to take this path?
+               influence[i.target_vertex] = newInfluence
                print("WE are updating ", i.target_vertex.index , "to ", str(Node2New))
                i.target_vertex['preColor'] = str(Node2New)
 
@@ -206,8 +210,16 @@ def damage(graph, source, sink, alpha=1):
             print("Damges", Damage)
 
 
+        try:
+            node, node_influence = influence.popitem() #This will pop off (and remove) the min unvisited influence
+        except KeyError:
+            # if there are no longer any more nodes to visit, just exit the loop
+            break
+        visited[node] = node_influence # add the node and its influence to the dict of visited nodes
+        """
         nodeID, node_influence = influence.popitem() #This will pop off (and remove) the min item in our list
         node = graph.vs.find(nodeID)
+        """
 
 
         '''
@@ -259,16 +271,16 @@ def most_detrimental(graph, source, sink, alpha=1):
     #Damges = priority queue (SortedDict object): only has the sink node ('one-column'), 
     #{sink:{"node1": "damage of removing node1 in path from source to sink", "node2: "....""}}
 
+    maxIndex = None
     try:
         maxIndex = max(damages, key = damages.get) #Finding the maximum node from the priority queue  Damages
         #print(graph.vs[maxIndex]["name"])
         if "name" in graph.vs[maxIndex].attributes():
-            return graph.vs[maxIndex]["name"]
-        else: 
-            return maxIndex
+            maxIndex = graph.vs[maxIndex]["name"]
     except ValueError:
         pass #Doesn't do anything
     
+    return maxIndex
 
 @click.group()
 @click.version_option()
