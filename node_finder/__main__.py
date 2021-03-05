@@ -27,38 +27,42 @@ def damage_at_child(old_child_damage, new_child_damage, old_influence, new_influ
             #child_damage[node]=min(new_damage, damage, old_child_damage.get(node, float('inf')))
             if node in old_child_damage: #Will be true if we have alread touched this child ## True for node 1 but not node 4
                 #child_damage[node]=min(damage, old_child_damage.get(node, float('inf')))
-                child_damage[node]=min(damage, old_child_damage[node])
+                updated_damage = old_child_damage[node] + new_damage
+                # child_damage[node]=min(damage, old_child_damage[node])
             else:
                 print("Are we hitting line 28")
                 #child_damage[node]=min(new_damage, damage, old_child_damage.get(node, float('inf')))
                 #child_damage[node]=min(new_damage, damage, old_child_damage.get(node, float('inf')))
                 print("NEW DAMAGA", new_damage)
-                child_damage[node]=min(new_damage, damage)
+                updated_damage = new_damage
+            child_damage[node] = min(damage, updated_damage)
 
     else: #Updating the old damages
         new_damage = new_influence - old_influence
         child_damage = old_child_damage
-        for node,damage in old_child_damage.items():
+        for node, damage in old_child_damage.items():
 
-            child_damage[node]=min(new_damage, damage)
+            # child_damage[node]=min(new_damage, damage)
 
             if node in new_child_damage: #Already have a damage- 
-                print("ENTERING======================================================================")
+                print("ENTERING======================================================================! :)")
                 print("new_child_damage[node]", new_child_damage[node])
                 print("new_damage", new_damage)
                 print("---")
                 #new_child_damage[node] - new_influence + old_influence
-                
+                """
                 if new_child_damage[node] < new_damage:
                     NEW_damage = new_child_damage[node]
                 else:
                     NEW_damage = new_child_damage[node] - new_damage
-
+                """
                 #A#NEW_damage = new_child_damage[node] - new_damage
-                print("NEW", NEW_damage)
+                updated_damage = new_child_damage[node] + new_damage
+                print("NEW", updated_damage)
                 print("damage", damage)
-                
-                child_damage[node] = min(NEW_damage, damage)
+            else:
+                updated_damage = new_damage
+            child_damage[node] = min(damage, updated_damage)
                 #green - pink           - green         + yellow
 
     child_damage[child] = float("inf")
