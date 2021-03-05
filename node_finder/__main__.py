@@ -76,7 +76,8 @@ def damage(graph, source, sink, alpha=1, also_return_visited=False):
         INPUTS: graph: an iGraph object ex. 0->1 1->2 2->3
                 source: always equal to our 0 node
                 sink: our target node
-                alpha: adjustable value 
+                alpha: adjustable value
+                aslo_return_visited: whether we should also return the visited nodes
 
         VARIABLES:
                 Influence: A priority queue(SortedDict): Node: influence
@@ -128,7 +129,7 @@ def damage(graph, source, sink, alpha=1, also_return_visited=False):
 
     #Find all incoming edges of sink
     print("SINK")
-    sinkObjects = graph.vs.find(sink).in_edges()
+    # sinkObjects = graph.vs.find(sink).in_edges()
     #sinkINT = set(sinkObject.source for sinkObject in sinkObjects)
 
     
@@ -152,8 +153,8 @@ def damage(graph, source, sink, alpha=1, also_return_visited=False):
             print("Attirbutes of Old Node--Node Edge, stored in Node", i.target_vertex.attributes())
             print("Attirbutes of Node--New Node Edge", i.attributes())
             #Old2Node = i.target_vertex.attributes()['preColor'] #This works as a dictionary, so we must pull the 'preColor' object out of it
-            Old2Node = node.attributes()['preColor']
-            Node2New = i.attributes()['type']
+            Old2Node = node['preColor']
+            Node2New = i['type']
             print('OldNode--Node', Old2Node)
             print('Node--NewNode', Node2New)
             print()
@@ -166,11 +167,11 @@ def damage(graph, source, sink, alpha=1, also_return_visited=False):
             old_child_damage = Damage[i.target_vertex.index] #child
             new_child_damage = Damage[node.index] #node
             print("#####Influence Priority Queue:", influence)
-            old_influence = influence[i.target_vertex] if i.target_vertex in influence else float('inf')
+            old_influence = influence.get(i.target_vertex, float('inf'))
             new_influence = newInfluence #The term we have been calculating above
             child = i.target_vertex.index #Child index
             child_damage = damage_at_child(old_child_damage, new_child_damage, old_influence, new_influence, child)
-            Damage[child]= child_damage
+            Damage[child] = child_damage
             
             '''3/3/21 Moved this to damage_at_child function above
             for other in Damage[i.target_vertex.index].keys():
@@ -327,9 +328,10 @@ def read_sif(fname, source, sink, alpha=1, plot=None):
     # run the most detrimenal node finder
     if plot:
         node, visited = most_detrimental(graph, source, sink, alpha, True)
+
         # subset the graph to just the nodes that were visited
         graph = graph.induced_subgraph(visited.keys())
-        # add node labels and edge colors
+        # add node labels, node colors, and edge colors
         graph.vs["label"] = graph.vs["name"]
         graph.vs.find(source)["color"] = 'green'
         graph.vs.find(sink)["color"] = 'green'
@@ -340,14 +342,14 @@ def read_sif(fname, source, sink, alpha=1, plot=None):
         visual_style["vertex_size"] = 50
         visual_style["vertex_label_size"] = 25
         visual_style["edge_width"] = 4
-        # output the most detrimental node
-        click.echo('{}'.format(node))
+
         # write a plot of the nodes that were visited
         igraph.plot(graph, plot, **visual_style)
     else:
         node = most_detrimental(graph, source, sink, alpha)
-        # output the most detrimental node
-        click.echo('{}'.format(node))
+
+    # output the most detrimental node
+    click.echo('{}'.format(node))
 
 
 if __name__ == "__main__":
