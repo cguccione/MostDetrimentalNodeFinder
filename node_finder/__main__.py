@@ -129,14 +129,14 @@ def damage(graph, source, sink, alpha=1, also_return_visited=False):
 
     #Find all incoming edges of sink
     print("SINK")
-    # sinkObjects = graph.vs.find(sink).in_edges()
-    #sinkINT = set(sinkObject.source for sinkObject in sinkObjects)
+    sinkObjects = graph.vs.find(sink).in_edges()
+    sinkINT = set(sinkObject.source for sinkObject in sinkObjects)
 
     
     node = source #Node will hold our current node and starts with our source node-- This holds the igraph object
     #while node.index != sink: #while sink is unvisited
-    while True:
-        #sinkINT.discard(node.index)
+    while len(sinkINT):
+        sinkINT.discard(node.index)
         outEdges = node.out_edges() #Find all child nodes
         for i in outEdges: #Loop through all child nodes
             #print(i.target_vertex.index) #Just the node number
